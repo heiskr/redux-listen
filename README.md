@@ -6,7 +6,7 @@ redux-listener
 addListener(SET_VAR, ({ action, state, dispatch }) => {})
 
 addListeners({
-  [SET_VAR]({ action, state, dispatch }) => {
+  [SET_VAR]({ action, state, dispatch }) {
   
   })
 })
