@@ -1,11 +1,16 @@
 {
   "name": "redux-listener",
   "version": "0.0.1",
-  "description": "redux-listener --------------",
+  "description": "Use the listener pattern with Redux middleware.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test.js"
   },
-  "author": "",
-  "license": "Apache-2.0"
+  "author": "Kevin Heis",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "chai": "4.1.2",
+    "mocha": "4.0.1",
+    "sinon": "4.1.3"
+  }
 }

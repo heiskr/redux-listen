@@ -1,6 +1,10 @@
-export const listeners = []
+let listeners = []
 
-export function testListener(listenerType, actionType) {
+function getListeners() {
+  return listeners
+}
+
+function testListener(listenerType, actionType) {
   return !!(
     listenerType === actionType ||
     listenerType === '*' ||
@@ -8,7 +12,25 @@ export function testListener(listenerType, actionType) {
   )
 }
 
-export const reduxListenerMiddleware = store => next => (action) => {
+function addListener(type, listener) {
+  listeners.push({ type, listener })
+  return { [type]: listener }
+}
+
+function addListeners(obj) {
+  Object.keys(obj).map(type => addListener(type, obj[type]))
+  return obj
+}
+
+function removeListeners({ type, listener } = {}) {
+  listeners = listeners
+    .filter(_ => !(
+      (type ? _.type === type : true) &&
+      (listener ? _.listener === listener : true)
+    ))
+}
+
+const reduxListenerMiddleware = store => next => (action) => {
   const result = next(action)
   const state = store.getState()
   const dispatch = store.dispatch
@@ -22,17 +44,11 @@ export const reduxListenerMiddleware = store => next => (action) => {
   return result
 }
 
-export function addListener(type, listener) {
-  listeners.push({ type, listener })
-  return function removeListener() {
-    const index = listeners.indexOf(listener)
-    if (index > -1) { listeners.splice(index, 1) }
-  }
-}
-
-export function addListeners(obj) {
-  const removes = Object.keys(obj).map(type => addListener(type, obj[type]))
-  return function removeListeners() {
-    removes.forEach(rm => rm())
-  }
+module.exports = {
+  getListeners,
+  testListener,
+  addListener,
+  addListeners,
+  removeListeners,
+  reduxListenerMiddleware,
 }
