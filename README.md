@@ -16,4 +16,7 @@ addListeners({
     ...
   }
 })
+
+// Add it into your store
+const store = createStore(reducer, applyMiddleware(reduxListenerMiddleware))
 ```
