@@ -1,5 +1,5 @@
 
-redux-listener
+redux-listen
 --------------
 
 Use the listener pattern with Redux middleware.
