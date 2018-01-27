@@ -85,7 +85,9 @@ onResolve(function() {
 dispatch({ type: 'SET_VAR' })
 ```
 
-So two things here, there's a second real argument to the callback of `addListener`: `done`. If you ask for `done`, that means you have something async going on in that listener. Call `done` when that callback is totally finished. When all the asyncs have finished, every function you've provided to `onResolve` up to that point we'll call. But only once!
+So two things here, there's a second real argument to the callback of `addListener`: `done`. If you ask for `done`, that means you have something async going on in that listener. Call `done` when that callback is totally finished. 
+
+When all the asyncs have finished, every function you've provided to `onResolve` up to that point we'll call. After that, the `onResolve` functions clear out. So if you need to do it again, you need to `onResolve` again as well.
 
 ## isPending
 
