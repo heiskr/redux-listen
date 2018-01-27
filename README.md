@@ -6,19 +6,29 @@ redux-listen
 
 Use the listener pattern with Redux middleware.
 
+To add the middleware to your store:
+
 ```javascript
-// To add a listener
+const store = createStore(reducer, applyMiddleware(reduxListenerMiddleware))
+```
+
+To add a listener:
+
+```javascript
 addListener(SET_VAR, ({ action, state, dispatch }) => {
   ...
 })
+```
 
+To add many listeners:
+
+```javascript
 // Or add many listeners
 addListeners({
   [SET_VAR]({ action, state, dispatch }) {
     ...
   }
 })
-
-// Add it into your store
-const store = createStore(reducer, applyMiddleware(reduxListenerMiddleware))
 ```
+
+The advantage of adding using the "many" syntax is you get named functions for free.
