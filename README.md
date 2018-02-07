@@ -35,6 +35,18 @@ addListener(/^FAIL_.*$/, ({ action, state, dispatch }) => {
 
 You can also listen for actions where the action type matches a RegExp.
 
+```javascript
+addListener('*', ({ action, state, dispatch }) => {
+  ...
+})
+```
+
+A `*` listener will trigger on every action.
+
+You may set multiple listeners to the same action. We will check and call listeners in the order received.
+
+`addListener` will return `{ [type]: fn }` back, so you can export the returned value for unit testing.
+
 ## addListeners
 
 To add many listeners:
@@ -73,6 +85,8 @@ addListeners({
 To chain network requests: dispatch an action when the first call is done, then listen for what you've dispatched.
 You can also condition your chaining based on action or state properties.
 
+`addListeners` will return what you give back, so you can export the returned value for unit testing.
+
 ## removeListeners
 
 There's four ways to use `removeListeners`.
@@ -94,6 +108,10 @@ removeListeners({ fn: listenerFn })
 ```
 
 With `fn`, the middleware removes all listeners with the same callback function.
+
+```javascript
+removeListeners({ type: 'SET_VAR', fn: listenerFn })
+```
 
 You can also use both `type` and `fn` to remove listeners that match BOTH -- but not only `type` or only `fn`.
 
@@ -117,7 +135,9 @@ dispatch({ type: 'SET_VAR' })
 
 So two things here, there's a second real argument to the callback of `addListener`: `done`. If you ask for `done`, that means you have something async going on in that listener. Call `done` when that callback is totally finished.
 
-When all the asyncs have finished, every function you've provided to `onResolve` up to that point we'll call. After that, the `onResolve` functions clear out. So if you need to do it again, you need to `onResolve` again as well.
+When all the asyncs have finished, every function you've provided to `onResolve` up to that point we'll call. After that, the `onResolve` functions clear out. So if you need to do it again, you need to give `onResolve` your functions again as well.
+
+`onResolve` returns the function you provide it, to help with your unit testing.
 
 ## isPending
 
