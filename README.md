@@ -11,8 +11,8 @@ Use the listener pattern with Redux middleware.
 To add the middleware to your store:
 
 ```javascript
-const reduxListenerMiddleware = require('redux-listen').reduxListenerMiddleware
-const store = createStore(reducer, applyMiddleware(reduxListenerMiddleware))
+const reduxListenMiddleware = require('redux-listen').reduxListenMiddleware
+const store = createStore(reducer, applyMiddleware(reduxListenMiddleware))
 ```
 
 ## addListener
