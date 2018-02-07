@@ -27,6 +27,14 @@ addListener(SET_VAR, ({ action, state, dispatch }) => {
 
 Now, whenever the action with the type `SET_VAR` dispatches, the middleware will call the function.
 
+```javascript
+addListener(/^FAIL_.*$/, ({ action, state, dispatch }) => {
+  ...
+})
+```
+
+You can also listen for actions where the action type matches a RegExp.
+
 ## addListeners
 
 To add many listeners:
@@ -42,6 +50,28 @@ addListeners({
 
 The advantage of adding using the "many" syntax is you get named functions for free.
 Also in this case, whenever the action with the type `SET_VAR` dispatches, the middleware will call the function.
+
+```javascript
+addListeners({
+  [FETCH_USERS]({ dispatch }, done) {
+    fetchUser({ id: '1' }).then(() => {
+      dispatch({ type: FETCH_USERS_SUCCESS })
+      dispatch({ type: FETCH_NOTICES })
+      done()
+    })
+  },
+
+  [FETCH_NOTICES]({ state, dispatch }, done) {
+    fetchNotices({ userToken: state.userToken }).then(() => {
+      dispatch({ type: FETCH_NOTICES })
+      done()
+    })
+  },
+})
+```
+
+To chain network requests: dispatch an action when the first call is done, then listen for what you've dispatched.
+You can also condition your chaining based on action or state properties.
 
 ## removeListeners
 
@@ -65,7 +95,7 @@ removeListeners({ fn: listenerFn })
 
 With `fn`, the middleware removes all listeners with the same callback function.
 
-You can also use both type and fn to remove listeners that match BOTH (but not only `type` or only `fn`).
+You can also use both `type` and `fn` to remove listeners that match BOTH -- but not only `type` or only `fn`.
 
 ## onResolve
 
@@ -78,14 +108,14 @@ addListener(SET_VAR, ({ action, state, dispatch }, done) => {
   })
 })
 
-onResolve(function() {
+onResolve(function({ state, dispatch }) {
   alert('We are done asyncing! Page ready!')
 })
 
 dispatch({ type: 'SET_VAR' })
 ```
 
-So two things here, there's a second real argument to the callback of `addListener`: `done`. If you ask for `done`, that means you have something async going on in that listener. Call `done` when that callback is totally finished. 
+So two things here, there's a second real argument to the callback of `addListener`: `done`. If you ask for `done`, that means you have something async going on in that listener. Call `done` when that callback is totally finished.
 
 When all the asyncs have finished, every function you've provided to `onResolve` up to that point we'll call. After that, the `onResolve` functions clear out. So if you need to do it again, you need to `onResolve` again as well.
 

@@ -1,6 +1,6 @@
 let listeners = []
 let pendingCount = 0
-let pendingListeners = []
+let resolveListeners = []
 
 function getListeners() {
   return listeners
@@ -8,11 +8,8 @@ function getListeners() {
 
 function testListener(actionType, listenerType, listenerMatch) {
   return !!(
-    (listenerType && (
-      listenerType === actionType ||
-      listenerType === '*')) ||
-    (listenerMatch &&
-      actionType.match(listenerMatch))
+    (listenerType && (listenerType === actionType || listenerType === '*')) ||
+    (listenerMatch && actionType.match(listenerMatch))
   )
 }
 
@@ -36,11 +33,9 @@ function addListeners(obj) {
 }
 
 function removeListeners({ type, fn } = {}) {
-  listeners = listeners
-    .filter(_ => !(
-      (type ? _.type === type : true) &&
-      (fn ? _.fn === fn : true)
-    ))
+  listeners = listeners.filter(
+    _ => !((type ? _.type === type : true) && (fn ? _.fn === fn : true))
+  )
   return getListeners()
 }
 
@@ -48,8 +43,8 @@ function getPendingCount() {
   return pendingCount
 }
 
-function getPendingListeners() {
-  return pendingListeners
+function getResolveListeners() {
+  return resolveListeners
 }
 
 function isPending() {
@@ -57,19 +52,30 @@ function isPending() {
 }
 
 function onResolve(fn) {
-  pendingListeners.push(fn)
+  resolveListeners.push(fn)
   return fn
 }
 
-function decrementPendingCount() {
-  if (pendingCount > 0) {
-    pendingCount -= 1
-    if (pendingCount === 0) {
-      pendingListeners.forEach(fn => fn())
-      pendingListeners = []
+function decrementPendingCount(state, dispatch) {
+  return function() {
+    if (pendingCount > 0) {
+      pendingCount -= 1
+      if (pendingCount === 0) {
+        getResolveListeners().forEach(fn => fn({ state, dispatch }))
+        resolveListeners = []
+      }
     }
   }
-  return getPendingCount()
+}
+
+function handleAction(state, action, dispatch) {
+  const matches = listeners.filter(({ type, match }) =>
+    testListener(action.type, type, match)
+  )
+  pendingCount += matches.filter(({ fn }) => fn.length > 1).length
+  matches.forEach(({ fn }) =>
+    fn({ action, state, dispatch }, decrementPendingCount(state, dispatch))
+  )
 }
 
 const reduxListenMiddleware = store => next => action => {
@@ -77,9 +83,7 @@ const reduxListenMiddleware = store => next => action => {
   const state = store.getState()
   const dispatch = store.dispatch
   try {
-    const matches = listeners.filter(({ type, match }) => testListener(action.type, type, match))
-    pendingCount += matches.filter(({ fn }) => fn.length > 1).length
-    matches.forEach(({ fn }) => fn({ action, state, dispatch }, decrementPendingCount))
+    handleAction(state, action, dispatch)
   } catch (e) {
     console.error(e)
   }
@@ -94,7 +98,7 @@ module.exports = {
   addListeners,
   removeListeners,
   getPendingCount,
-  getPendingListeners,
+  getResolveListeners,
   isPending,
   onResolve,
   decrementPendingCount,

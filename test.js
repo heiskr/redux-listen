@@ -6,7 +6,7 @@ const {
   addListeners,
   removeListeners,
   getPendingCount,
-  getPendingListeners,
+  getResolveListeners,
   isPending,
   onResolve,
   decrementPendingCount,
@@ -133,9 +133,9 @@ describe('redux-listener', () => {
     })
   })
 
-  describe('#getPendingListeners', () => {
-    test('should get pending listeners', () => {
-      expect(getPendingListeners()).toEqual([])
+  describe('#getResolveListeners', () => {
+    test('should get resolve listeners', () => {
+      expect(getResolveListeners()).toEqual([])
     })
   })
 
@@ -163,16 +163,17 @@ describe('redux-listener', () => {
 
   describe('#onResolve', () => {
     test('should add to array of resolvers', (done) => {
-      expect(getPendingListeners()).toEqual([])
+      expect(getResolveListeners()).toEqual([])
       const fn = jest.fn()
       onResolve(fn)
-      expect(getPendingListeners()).toEqual([fn])
+      expect(getResolveListeners()).toEqual([fn])
 
       function fn2({}, _) {
         setTimeout(() => {
           _()
           expect(getPendingCount()).toEqual(0)
-          expect(getPendingListeners()).toEqual([])
+          expect(getResolveListeners()).toEqual([])
+          expect(fn).toBeCalled()
           done()
         })
       }
@@ -187,7 +188,9 @@ describe('redux-listener', () => {
 
   describe('#decrementPendingCount', () => {
     test('should not decrement pending count', () => {
-      expect(decrementPendingCount()).toEqual(0)
+      expect(getPendingCount()).toEqual(0)
+      decrementPendingCount()()
+      expect(getPendingCount()).toEqual(0)
     })
 
     test('should decrement pending count', (done) => {
@@ -217,10 +220,10 @@ describe('redux-listener', () => {
     })
 
     test('should call pending listeners', (done) => {
-      expect(getPendingListeners()).toEqual([])
+      expect(getResolveListeners()).toEqual([])
       const fn = jest.fn()
       onResolve(fn)
-      expect(getPendingListeners()).toEqual([fn])
+      expect(getResolveListeners()).toEqual([fn])
 
       function fn2({}, _) {
         setTimeout(() => {
