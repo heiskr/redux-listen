@@ -189,7 +189,7 @@ describe('redux-listener', () => {
   describe('#decrementPendingCount', () => {
     test('should not decrement pending count', () => {
       expect(getPendingCount()).toEqual(0)
-      decrementPendingCount()()
+      decrementPendingCount(() => {}, () => {})()
       expect(getPendingCount()).toEqual(0)
     })
 

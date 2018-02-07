@@ -56,8 +56,9 @@ function onResolve(fn) {
   return fn
 }
 
-function decrementPendingCount(state, dispatch) {
+function decrementPendingCount(getState, dispatch) {
   return function() {
+    const state = getState()
     if (pendingCount > 0) {
       pendingCount -= 1
       if (pendingCount === 0) {
@@ -68,22 +69,22 @@ function decrementPendingCount(state, dispatch) {
   }
 }
 
-function handleAction(state, action, dispatch) {
+function handleAction(getState, action, dispatch) {
+  const state = getState()
   const matches = listeners.filter(({ type, match }) =>
     testListener(action.type, type, match)
   )
   pendingCount += matches.filter(({ fn }) => fn.length > 1).length
   matches.forEach(({ fn }) =>
-    fn({ action, state, dispatch }, decrementPendingCount(state, dispatch))
+    fn({ action, state, dispatch }, decrementPendingCount(getState, dispatch))
   )
 }
 
 const reduxListenMiddleware = store => next => action => {
   const result = next(action)
-  const state = store.getState()
   const dispatch = store.dispatch
   try {
-    handleAction(state, action, dispatch)
+    handleAction(store.getState, action, dispatch)
   } catch (e) {
     console.error(e)
   }
