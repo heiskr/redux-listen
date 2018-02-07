@@ -61,8 +61,7 @@ function decrementPendingCount(getState, dispatch) {
     if (pendingCount > 0) {
       pendingCount -= 1
       if (pendingCount === 0) {
-        const state = getState()
-        getResolveListeners().forEach(fn => fn({ state, dispatch }))
+        getResolveListeners().forEach(fn => fn({ getState, dispatch }))
         resolveListeners = []
       }
     }
@@ -70,13 +69,12 @@ function decrementPendingCount(getState, dispatch) {
 }
 
 function handleAction(getState, action, dispatch) {
-  const state = getState()
   const matches = listeners.filter(({ type, match }) =>
     testListener(action.type, type, match)
   )
   pendingCount += matches.filter(({ fn }) => fn.length > 1).length
   matches.forEach(({ fn }) =>
-    fn({ action, state, dispatch }, decrementPendingCount(getState, dispatch))
+    fn({ action, getState, dispatch }, decrementPendingCount(getState, dispatch))
   )
 }
 

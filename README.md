@@ -20,7 +20,7 @@ const store = createStore(reducer, applyMiddleware(reduxListenMiddleware))
 To add a listener:
 
 ```javascript
-addListener(SET_VAR, ({ action, state, dispatch }) => {
+addListener(SET_VAR, ({ action, getState, dispatch }) => {
   ...
 })
 ```
@@ -28,7 +28,7 @@ addListener(SET_VAR, ({ action, state, dispatch }) => {
 Now, whenever the action with the type `SET_VAR` dispatches, the middleware will call the function.
 
 ```javascript
-addListener(/^FAIL_.*$/, ({ action, state, dispatch }) => {
+addListener(/^FAIL_.*$/, ({ action, getState, dispatch }) => {
   ...
 })
 ```
@@ -36,7 +36,7 @@ addListener(/^FAIL_.*$/, ({ action, state, dispatch }) => {
 You can also listen for actions where the action type matches a RegExp.
 
 ```javascript
-addListener('*', ({ action, state, dispatch }) => {
+addListener('*', ({ action, getState, dispatch }) => {
   ...
 })
 ```
@@ -54,7 +54,7 @@ To add many listeners:
 ```javascript
 // Or add many listeners
 addListeners({
-  [SET_VAR]({ action, state, dispatch }) {
+  [SET_VAR]({ action, getState, dispatch }) {
     ...
   }
 })
@@ -73,8 +73,8 @@ addListeners({
     })
   },
 
-  [FETCH_NOTICES]({ state, dispatch }, done) {
-    fetchNotices({ userToken: state.userToken }).then(() => {
+  [FETCH_NOTICES]({ getState, dispatch }, done) {
+    fetchNotices({ userToken: getState().userToken }).then(() => {
       dispatch({ type: FETCH_NOTICES })
       done()
     })
@@ -120,13 +120,13 @@ You can also use both `type` and `fn` to remove listeners that match BOTH -- but
 Got some async going on, and need to know when you're done "asyncing"?
 
 ```javascript
-addListener(SET_VAR, ({ action, state, dispatch }, done) => {
+addListener(SET_VAR, ({ action, getState, dispatch }, done) => {
   myPromise.then(() => {
     done()
   })
 })
 
-onResolve(function({ state, dispatch }) {
+onResolve(function({ getState, dispatch }) {
   alert('We are done asyncing! Page ready!')
 })
 
