@@ -43,7 +43,9 @@ addListener('*', ({ action, getState, dispatch }) => {
 
 A `*` listener will trigger on every action.
 
-You may set multiple listeners to the same action. We will check and call listeners in the order received.
+You may set multiple listeners to the same action. We will check and call listeners in the order received. 
+
+Don't be afraid to call `getState` often, [it's basically free](https://github.com/reactjs/redux/blob/master/src/createStore.js#L66).
 
 `addListener` will return `{ [type]: fn }` back, so you can export the returned value for unit testing.
 
