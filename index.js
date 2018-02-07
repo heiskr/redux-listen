@@ -34,7 +34,7 @@ function addListeners(obj) {
 
 function removeListeners({ type, fn } = {}) {
   listeners = listeners.filter(
-    _ => !((type ? _.type === type : true) && (fn ? _.fn === fn : true))
+    _ => (type && _.type !== type) || (fn && _.fn !== fn)
   )
   return getListeners()
 }
@@ -58,12 +58,11 @@ function onResolve(fn) {
 
 function decrementPendingCount(getState, dispatch) {
   return function() {
-    if (pendingCount > 0) {
-      pendingCount -= 1
-      if (pendingCount === 0) {
-        getResolveListeners().forEach(fn => fn({ getState, dispatch }))
-        resolveListeners = []
-      }
+    if (pendingCount <= 0) { return }
+    pendingCount -= 1
+    if (pendingCount === 0) {
+      getResolveListeners().forEach(fn => fn({ getState, dispatch }))
+      resolveListeners = []
     }
   }
 }
