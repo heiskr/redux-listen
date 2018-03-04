@@ -128,7 +128,7 @@ addListener(SET_VAR, ({ action, getState, dispatch }, done) => {
   })
 })
 
-onResolve(function({ getState, dispatch }) {
+onResolve(({ getState, dispatch }) => {
   alert('We are done asyncing! Page ready!')
 })
 
