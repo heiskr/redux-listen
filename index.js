@@ -18,10 +18,8 @@ function isRegExp(o) {
 }
 
 function addListener(type, fn) {
-  const typeIsRegExp = isRegExp(type)
   listeners.push({
-    type: !typeIsRegExp && type,
-    match: typeIsRegExp && type,
+    [isRegExp(type) ? 'match' : 'type']: type,
     fn,
   })
   return { [type]: fn }

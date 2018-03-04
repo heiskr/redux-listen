@@ -50,7 +50,7 @@ describe('redux-listener', () => {
       const type = 'TYPE'
       addListener(type, fn)
       expect(getListeners()).toHaveLength(1)
-      expect(getListeners()[0]).toEqual({ type, match: false, fn })
+      expect(getListeners()[0]).toEqual({ type, fn })
       removeListeners()
     })
 
@@ -59,7 +59,7 @@ describe('redux-listener', () => {
       const type = /TYPE/
       addListener(type, fn)
       expect(getListeners()).toHaveLength(1)
-      expect(getListeners()[0]).toEqual({ type: false, match: type, fn })
+      expect(getListeners()[0]).toEqual({ match: type, fn })
       removeListeners()
     })
   })
@@ -75,8 +75,8 @@ describe('redux-listener', () => {
         [typeB]: listenerB,
       })
       expect(getListeners()).toHaveLength(2)
-      expect(getListeners()[0]).toEqual({ type: typeA, match: false, fn: listenerA })
-      expect(getListeners()[1]).toEqual({ type: typeB, match: false, fn: listenerB })
+      expect(getListeners()[0]).toEqual({ type: typeA, fn: listenerA })
+      expect(getListeners()[1]).toEqual({ type: typeB, fn: listenerB })
       removeListeners()
     })
   })
@@ -109,21 +109,21 @@ describe('redux-listener', () => {
       expect(getListeners()).toHaveLength(2)
       removeListeners({ type: typeB })
       expect(getListeners()).toHaveLength(1)
-      expect(getListeners()[0]).toEqual({ type: typeA, match: false, fn: listenerA })
+      expect(getListeners()[0]).toEqual({ type: typeA, fn: listenerA })
     })
 
     test('should remove listeners by fn', () => {
       expect(getListeners()).toHaveLength(2)
       removeListeners({ fn: listenerB })
       expect(getListeners()).toHaveLength(1)
-      expect(getListeners()[0]).toEqual({ type: typeA, match: false, fn: listenerA })
+      expect(getListeners()[0]).toEqual({ type: typeA, fn: listenerA })
     })
 
     test('should remove listeners by type and fn', () => {
       expect(getListeners()).toHaveLength(2)
       removeListeners({ type: typeB, fn: listenerB })
       expect(getListeners()).toHaveLength(1)
-      expect(getListeners()[0]).toEqual({ type: typeA, match: false, fn: listenerA })
+      expect(getListeners()[0]).toEqual({ type: typeA, fn: listenerA })
     })
   })
 
