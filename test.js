@@ -139,19 +139,20 @@ describe('redux-listener', () => {
     })
 
     test('should be true if waiting', (done) => {
-      function fn({}, _) {
-        setTimeout(() => {
-          _()
-          done()
-        })
-      }
-      addListener('FOO', fn)
       const store = { getState: () => ({}), dispatch: a => a }
       const next = jest.fn()
       const action = { type: 'FOO' }
+      addListener('FOO', ({}, _) => {
+        setTimeout(() => {
+          _()
+          expect(isPending()).toBe(false)
+          removeListeners()
+          done()
+        })
+      })
+      expect(isPending()).toBe(false)
       reduxListenMiddleware(store)(next)(action)
       expect(isPending()).toBe(true)
-      removeListeners()
     })
   })
 
@@ -173,7 +174,11 @@ describe('redux-listener', () => {
     })
 
     test('should decrement pending count and should call resolve listeners', (done) => {
-      function fn({}, _) {
+      const store = { getState: () => ({}), dispatch: a => middleware(a) }
+      const next = jest.fn()
+      const middleware = reduxListenMiddleware(store)(next)
+      const resolver = jest.fn()
+      addListener('FOO', ({}, _) => {
         setTimeout(() => {
           expect(getPendingCount()).toEqual(2)
           _()
@@ -181,8 +186,8 @@ describe('redux-listener', () => {
           _()  // this shouldn't do anything the second time
           expect(resolver).not.toBeCalled()
         }, 10)
-      }
-      function fn2({}, _) {
+      })
+      addListener('FOO', ({}, _) => {
         setTimeout(() => {
           expect(getPendingCount()).toEqual(1)
           _()
@@ -191,16 +196,9 @@ describe('redux-listener', () => {
           removeListeners()
           done()
         }, 20)
-      }
-      addListener('FOO', fn)
-      addListener('FOO', fn2)
-      const resolver = jest.fn()
+      })
       addListener(REDUX_LISTEN_RESOLVE, () => resolver())
-      const store = { getState: () => ({}), dispatch: a => middleware(a) }
-      const next = jest.fn()
-      const middleware = reduxListenMiddleware(store)(next)
-      const action = { type: 'FOO' }
-      middleware(action)
+      middleware({ type: 'FOO' })
       expect(getPendingCount()).toEqual(2)
     })
   })
