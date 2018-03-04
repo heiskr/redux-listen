@@ -1,6 +1,6 @@
 {
   "name": "redux-listen",
-  "version": "3.0.1",
+  "version": "4.0.0",
   "description": "Use the listener pattern with Redux middleware.",
   "keywords": [
     "redux-middleware",
@@ -13,11 +13,18 @@
     "dispatcher"
   ],
   "homepage": "https://github.com/heiskr/redux-listen",
-  "bugs": { "url": "https://github.com/heiskr/redux-listen/issues" },
+  "bugs": {
+    "url": "https://github.com/heiskr/redux-listen/issues"
+  },
   "author": "Kevin Heis",
   "license": "Apache-2.0",
-  "repository": { "type": "git", "url": "https://github.com/heiskr/redux-listen.git" },
-  "engines" : { "node" : ">=8.9.4" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heiskr/redux-listen.git"
+  },
+  "engines": {
+    "node": ">=8.9.4"
+  },
   "main": "index.js",
   "scripts": {
     "test": "jest test.js",
