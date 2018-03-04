@@ -1,6 +1,6 @@
 {
   "name": "redux-listen",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Use the listener pattern with Redux middleware.",
   "keywords": [
     "redux-middleware",
