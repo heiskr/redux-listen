@@ -9,6 +9,7 @@ const {
   getResolveListeners,
   isPending,
   onResolve,
+  once,
   decrementPendingCount,
   reduxListenMiddleware,
 } = require('./index')
@@ -183,6 +184,16 @@ describe('redux-listener', () => {
       const action = { type: 'FOO' }
       reduxListenMiddleware(store)(next)(action)
       removeListeners()
+    })
+  })
+
+  describe('#once', () => {
+    test('should only call the function once', () => {
+      const fn = jest.fn()
+      const wrapped = once(fn)
+      wrapped()
+      wrapped()
+      expect(fn).toHaveBeenCalledTimes(1)
     })
   })
 

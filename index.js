@@ -6,37 +6,6 @@ function getListeners() {
   return listeners
 }
 
-function testListener(actionType, listenerType, listenerMatch) {
-  return !!(
-    (listenerType && (listenerType === actionType || listenerType === '*')) ||
-    (listenerMatch && actionType.match(listenerMatch))
-  )
-}
-
-function isRegExp(o) {
-  return Object.prototype.toString.call(o) === '[object RegExp]'
-}
-
-function addListener(type, fn) {
-  listeners.push({
-    [isRegExp(type) ? 'match' : 'type']: type,
-    fn,
-  })
-  return { [type]: fn }
-}
-
-function addListeners(obj) {
-  Object.keys(obj).map(type => addListener(type, obj[type]))
-  return obj
-}
-
-function removeListeners({ type, fn } = {}) {
-  listeners = listeners.filter(
-    _ => (type && _.type !== type) || (fn && _.fn !== fn)
-  )
-  return getListeners()
-}
-
 function getPendingCount() {
   return pendingCount
 }
@@ -46,7 +15,27 @@ function getResolveListeners() {
 }
 
 function isPending() {
-  return getPendingCount() > 0
+  return pendingCount > 0
+}
+
+function isRegExp(o) {
+  return Object.prototype.toString.call(o) === '[object RegExp]'
+}
+
+function addListener(type, fn) {
+  listeners.push({ fn, [isRegExp(type) ? 'match' : 'type']: type })
+  return fn
+}
+
+function addListeners(obj) {
+  Object.keys(obj).map(type => addListener(type, obj[type]))
+  return obj
+}
+
+function removeListeners({ type, fn } = {}) {
+  return (listeners = listeners.filter(
+    _ => (type && _.type !== type) || (fn && _.fn !== fn)
+  ))
 }
 
 function onResolve(fn) {
@@ -54,15 +43,41 @@ function onResolve(fn) {
   return fn
 }
 
+function once(fn) {
+  let called = false
+  let result
+  return () => {
+    if (!called) {
+      result = fn()
+    }
+    called = true
+    return result
+  }
+}
+
+function callResolveListeners(getState, dispatch) {
+  resolveListeners.forEach(fn => fn({ getState, dispatch }))
+  return (resolveListeners = [])
+}
+
 function decrementPendingCount(getState, dispatch) {
-  return function() {
-    if (pendingCount <= 0) { return }
+  return once(() => {
+    if (pendingCount < 1) {
+      return pendingCount
+    }
     pendingCount -= 1
     if (pendingCount === 0) {
-      getResolveListeners().forEach(fn => fn({ getState, dispatch }))
-      resolveListeners = []
+      callResolveListeners(getState, dispatch)
     }
-  }
+    return pendingCount
+  })
+}
+
+function testListener(actionType, listenerType, listenerMatch) {
+  return !!(
+    (listenerType && (listenerType === actionType || listenerType === '*')) ||
+    (listenerMatch && actionType.match(listenerMatch))
+  )
 }
 
 function handleAction(getState, action, dispatch) {
@@ -70,8 +85,11 @@ function handleAction(getState, action, dispatch) {
     testListener(action.type, type, match)
   )
   pendingCount += matches.filter(({ fn }) => fn.length > 1).length
-  matches.forEach(({ fn }) =>
-    fn({ action, getState, dispatch }, decrementPendingCount(getState, dispatch))
+  return matches.map(({ fn }) =>
+    fn(
+      { getState, action, dispatch },
+      fn.length > 1 && decrementPendingCount(getState, dispatch)
+    )
   )
 }
 
@@ -87,15 +105,17 @@ const reduxListenMiddleware = store => next => action => {
 
 module.exports = {
   getListeners,
-  testListener,
+  getPendingCount,
+  getResolveListeners,
+  isPending,
   isRegExp,
   addListener,
   addListeners,
   removeListeners,
-  getPendingCount,
-  getResolveListeners,
-  isPending,
   onResolve,
+  once,
+  callResolveListeners,
   decrementPendingCount,
+  testListener,
   reduxListenMiddleware,
 }
