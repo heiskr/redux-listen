@@ -46,7 +46,7 @@ function once(fn) {
   }
 }
 
-function decrementPendingCount(getState, dispatch) {
+function decrementPendingCount(dispatch) {
   return once(() => {
     if (pendingCount < 1) {
       return pendingCount
@@ -74,7 +74,7 @@ function handleAction(getState, action, dispatch) {
   return matches.map(({ fn }) =>
     fn(
       { getState, action, dispatch },
-      fn.length > 1 && decrementPendingCount(getState, dispatch)
+      fn.length > 1 && decrementPendingCount(dispatch)
     )
   )
 }
