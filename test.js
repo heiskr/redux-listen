@@ -1,16 +1,15 @@
 const {
+  REDUX_LISTEN_RESOLVE,
   getListeners,
-  testListener,
+  getPendingCount,
+  isPending,
   isRegExp,
   addListener,
   addListeners,
   removeListeners,
-  getPendingCount,
-  getResolveListeners,
-  isPending,
-  onResolve,
   once,
   decrementPendingCount,
+  testListener,
   reduxListenMiddleware,
 } = require('./index')
 
@@ -134,12 +133,6 @@ describe('redux-listener', () => {
     })
   })
 
-  describe('#getResolveListeners', () => {
-    test('should get resolve listeners', () => {
-      expect(getResolveListeners()).toEqual([])
-    })
-  })
-
   describe('#isPending', () => {
     test('should be false if nothing', () => {
       expect(isPending()).toBe(false)
@@ -153,36 +146,11 @@ describe('redux-listener', () => {
         })
       }
       addListener('FOO', fn)
-      const store = { getState: () => ({}) }
+      const store = { getState: () => ({}), dispatch: a => a }
       const next = jest.fn()
       const action = { type: 'FOO' }
       reduxListenMiddleware(store)(next)(action)
       expect(isPending()).toBe(true)
-      removeListeners()
-    })
-  })
-
-  describe('#onResolve', () => {
-    test('should add to array of resolvers', (done) => {
-      expect(getResolveListeners()).toEqual([])
-      const fn = jest.fn()
-      onResolve(fn)
-      expect(getResolveListeners()).toEqual([fn])
-
-      function fn2({}, _) {
-        setTimeout(() => {
-          _()
-          expect(getPendingCount()).toEqual(0)
-          expect(getResolveListeners()).toEqual([])
-          expect(fn).toBeCalled()
-          done()
-        })
-      }
-      addListener('FOO', fn2)
-      const store = { getState: () => ({}) }
-      const next = jest.fn()
-      const action = { type: 'FOO' }
-      reduxListenMiddleware(store)(next)(action)
       removeListeners()
     })
   })
@@ -204,12 +172,14 @@ describe('redux-listener', () => {
       expect(getPendingCount()).toEqual(0)
     })
 
-    test('should decrement pending count', (done) => {
+    test('should decrement pending count and should call resolve listeners', (done) => {
       function fn({}, _) {
         setTimeout(() => {
           expect(getPendingCount()).toEqual(2)
           _()
           expect(getPendingCount()).toEqual(1)
+          _()  // this shouldn't do anything the second time
+          expect(resolver).not.toBeCalled()
         }, 10)
       }
       function fn2({}, _) {
@@ -217,38 +187,21 @@ describe('redux-listener', () => {
           expect(getPendingCount()).toEqual(1)
           _()
           expect(getPendingCount()).toEqual(0)
+          expect(resolver).toBeCalled()
+          removeListeners()
           done()
         }, 20)
       }
       addListener('FOO', fn)
       addListener('FOO', fn2)
-      const store = { getState: () => ({}) }
+      const resolver = jest.fn()
+      addListener(REDUX_LISTEN_RESOLVE, () => resolver())
+      const store = { getState: () => ({}), dispatch: a => middleware(a) }
       const next = jest.fn()
+      const middleware = reduxListenMiddleware(store)(next)
       const action = { type: 'FOO' }
-      reduxListenMiddleware(store)(next)(action)
+      middleware(action)
       expect(getPendingCount()).toEqual(2)
-      removeListeners()
-    })
-
-    test('should call pending listeners', (done) => {
-      expect(getResolveListeners()).toEqual([])
-      const fn = jest.fn()
-      onResolve(fn)
-      expect(getResolveListeners()).toEqual([fn])
-
-      function fn2({}, _) {
-        setTimeout(() => {
-          _()
-          expect(fn).toBeCalled()
-          done()
-        })
-      }
-      addListener('FOO', fn2)
-      const store = { getState: () => ({}) }
-      const next = jest.fn()
-      const action = { type: 'FOO' }
-      reduxListenMiddleware(store)(next)(action)
-      removeListeners()
     })
   })
 

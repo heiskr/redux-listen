@@ -1,6 +1,6 @@
+const REDUX_LISTEN_RESOLVE = 'REDUX_LISTEN_RESOLVE'
 let listeners = []
 let pendingCount = 0
-let resolveListeners = []
 
 function getListeners() {
   return listeners
@@ -8,10 +8,6 @@ function getListeners() {
 
 function getPendingCount() {
   return pendingCount
-}
-
-function getResolveListeners() {
-  return resolveListeners
 }
 
 function isPending() {
@@ -38,11 +34,6 @@ function removeListeners({ type, fn } = {}) {
   ))
 }
 
-function onResolve(fn) {
-  resolveListeners.push(fn)
-  return fn
-}
-
 function once(fn) {
   let called = false
   let result
@@ -55,11 +46,6 @@ function once(fn) {
   }
 }
 
-function callResolveListeners(getState, dispatch) {
-  resolveListeners.forEach(fn => fn({ getState, dispatch }))
-  return (resolveListeners = [])
-}
-
 function decrementPendingCount(getState, dispatch) {
   return once(() => {
     if (pendingCount < 1) {
@@ -67,7 +53,7 @@ function decrementPendingCount(getState, dispatch) {
     }
     pendingCount -= 1
     if (pendingCount === 0) {
-      callResolveListeners(getState, dispatch)
+      dispatch({ type: REDUX_LISTEN_RESOLVE })
     }
     return pendingCount
   })
@@ -104,17 +90,15 @@ const reduxListenMiddleware = store => next => action => {
 }
 
 module.exports = {
+  REDUX_LISTEN_RESOLVE,
   getListeners,
   getPendingCount,
-  getResolveListeners,
   isPending,
   isRegExp,
   addListener,
   addListeners,
   removeListeners,
-  onResolve,
   once,
-  callResolveListeners,
   decrementPendingCount,
   testListener,
   reduxListenMiddleware,

@@ -75,7 +75,7 @@ addListeners({
 
   [FETCH_NOTICES]({ getState, dispatch }, done) {
     fetchNotices({ userToken: getState().userToken }).then(() => {
-      dispatch({ type: FETCH_NOTICES })
+      dispatch({ type: FETCH_NOTICES_SUCCESS })
       done()
     })
   },
@@ -115,29 +115,27 @@ removeListeners({ type: 'SET_VAR', fn: listenerFn })
 
 You can also use both `type` and `fn` to remove listeners that match BOTH -- but not only `type` or only `fn`.
 
-## onResolve
+## REDUX_LISTEN_RESOLVE
 
 Got some async going on, and need to know when you're done "asyncing"?
 
 ```javascript
-addListener(SET_VAR, ({ action, getState, dispatch }, done) => {
+addListener('SET_VAR', ({ action, getState, dispatch }, done) => {
   myPromise.then(() => {
     done()
   })
 })
 
-onResolve(({ getState, dispatch }) => {
+addListener('REDUX_LISTEN_RESOLVE', () => {
   alert('We are done asyncing! Page ready!')
 })
 
 dispatch({ type: 'SET_VAR' })
 ```
 
-So two things here, there's a second real argument to the callback of `addListener`: `done`. If you ask for `done`, that means you have something async going on in that listener. Call `done` when that callback is totally finished.
+There's a second real argument to the callback of `addListener`: `done`. If you ask for `done`, that means you have something async going on in that listener. Call `done` when that callback is totally finished. After you've called every `done`, we dispatch `{ type: 'REDUX_LISTEN_RESOLVE' }`.
 
-When all the asyncs have finished, every function you've provided to `onResolve` up to that point we'll call. After that, the `onResolve` functions clear out. So if you need to do it again, you need to give `onResolve` your functions again as well.
-
-`onResolve` returns the function you provide it, to help with your unit testing.
+Don't call for `done` on a listener to `REDUX_LISTEN_RESOLVE`. If you do, it will never trigger.
 
 ## isPending
 
