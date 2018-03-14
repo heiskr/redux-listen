@@ -29,9 +29,10 @@ function addListeners(obj) {
 }
 
 function removeListeners({ type, fn } = {}) {
-  return (listeners = listeners.filter(
+  listeners = listeners.filter(
     _ => (type && _.type !== type) || (fn && _.fn !== fn)
-  ))
+  )
+  return listeners
 }
 
 function once(fn) {
@@ -84,7 +85,7 @@ const reduxListenMiddleware = store => next => action => {
   try {
     handleAction(store.getState, action, store.dispatch)
   } catch (e) {
-    console.error(e)
+    console.error(e)  // eslint-disable-line no-console
   }
   return result
 }

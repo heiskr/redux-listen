@@ -40,7 +40,7 @@ describe('redux-listener', () => {
     })
 
     test('should false if not RegExp', () => {
-      expect(isRegExp('\d+')).toBe(false)
+      expect(isRegExp('\\d+')).toBe(false)
     })
   })
 
@@ -82,7 +82,10 @@ describe('redux-listener', () => {
   })
 
   describe('#removeListeners', () => {
-    let listenerA, listenerB, typeA, typeB
+    let listenerA
+    let listenerB
+    let typeA
+    let typeB
 
     beforeEach(() => {
       listenerA = jest.fn()
@@ -142,7 +145,7 @@ describe('redux-listener', () => {
       const store = { getState: () => ({}), dispatch: a => a }
       const next = jest.fn()
       const action = { type: 'FOO' }
-      addListener('FOO', ({}, _) => {
+      addListener('FOO', (x, _) => {
         setTimeout(() => {
           _()
           expect(isPending()).toBe(false)
@@ -174,11 +177,12 @@ describe('redux-listener', () => {
     })
 
     test('should decrement pending count and should call resolve listeners', (done) => {
+      let middleware
       const store = { getState: () => ({}), dispatch: a => middleware(a) }
       const next = jest.fn()
-      const middleware = reduxListenMiddleware(store)(next)
+      middleware = reduxListenMiddleware(store)(next)
       const resolver = jest.fn()
-      addListener('FOO', ({}, _) => {
+      addListener('FOO', (x, _) => {
         setTimeout(() => {
           expect(getPendingCount()).toEqual(2)
           _()
@@ -187,7 +191,7 @@ describe('redux-listener', () => {
           expect(resolver).not.toBeCalled()
         }, 10)
       })
-      addListener('FOO', ({}, _) => {
+      addListener('FOO', (x, _) => {
         setTimeout(() => {
           expect(getPendingCount()).toEqual(1)
           _()
@@ -228,7 +232,6 @@ describe('redux-listener', () => {
       const store = { getState() { return {} } }
       const next = jest.fn()
       const action = { type: 'FOO' }
-      const listener = jest.fn()
       addListener('FOO', fn)
       reduxListenMiddleware(store)(next)(action)
       expect(spy).toBeCalled()
