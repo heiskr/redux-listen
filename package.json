@@ -3,37 +3,29 @@
   "version": "4.0.2",
   "description": "Use the listener pattern with Redux middleware.",
   "keywords": [
-    "redux-middleware",
-    "redux",
-    "listener-pattern",
     "addlistener",
     "callback",
-    "middleware",
+    "dispatcher",
     "listener",
-    "dispatcher"
+    "listener-pattern",
+    "middleware",
+    "redux",
+    "redux-middleware"
   ],
   "homepage": "https://github.com/heiskr/redux-listen",
   "bugs": {
     "url": "https://github.com/heiskr/redux-listen/issues"
   },
-  "author": "Kevin Heis",
   "license": "Apache-2.0",
+  "author": "Kevin Heis",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/heiskr/redux-listen.git"
   },
-  "engines": {
-    "node": ">=8.9.4"
-  },
-  "main": "index.js",
   "scripts": {
-    "test": "jest test.js",
-    "precommit": "pretty-quick --staged"
-  },
-  "devDependencies": {
-    "jest": "22.1.4",
-    "prettier": "1.10.2",
-    "pretty-quick": "1.3.0"
+    "precommit": "pretty-quick --staged",
+    "test": "jest test.js"
   },
   "jest": {
     "collectCoverage": true,
@@ -45,5 +37,13 @@
         "statements": 100
       }
     }
+  },
+  "devDependencies": {
+    "jest": "22.1.4",
+    "prettier": "1.10.2",
+    "pretty-quick": "1.3.0"
+  },
+  "engines": {
+    "node": ">=8.9.4"
   }
 }
