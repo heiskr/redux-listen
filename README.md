@@ -1,16 +1,17 @@
-# redux-listen
+# Redux Listen
 
 [![Build Status](https://img.shields.io/travis/heiskr/redux-listen.svg?style=flat)](https://travis-ci.org/heiskr/redux-listen)
 
 Use the listener pattern with Redux middleware.
 
-## reduxListenMiddleware
+## Middleware
 
 To add the middleware to your store:
 
 ```javascript
-const reduxListenMiddleware = require('redux-listen').reduxListenMiddleware
-const store = createStore(reducer, applyMiddleware(reduxListenMiddleware))
+const ReduxListen = require('redux-listen')
+const listenStore = new ReduxListen()
+const store = createStore(reducer, applyMiddleware(listenStore.middleware))
 ```
 
 ## addListener
@@ -18,24 +19,24 @@ const store = createStore(reducer, applyMiddleware(reduxListenMiddleware))
 To add a listener:
 
 ```javascript
-addListener(SET_VAR, ({ action, getState, dispatch }) => {
-  ...
+listenStore.addListener(SET_VAR, ({ action, getState, dispatch }) => {
+  // ...
 })
 ```
 
 Now, whenever the action with the type `SET_VAR` dispatches, the middleware will call the function.
 
 ```javascript
-addListener(/^FAIL_.*$/, ({ action, getState, dispatch }) => {
-  ...
+listenStore.addListener(/^FAIL_.*$/, ({ action, getState, dispatch }) => {
+  // ...
 })
 ```
 
 You can also listen for actions where the action type matches a RegExp.
 
 ```javascript
-addListener('*', ({ action, getState, dispatch }) => {
-  ...
+listenStore.addListener('*', ({ action, getState, dispatch }) => {
+  // ...
 })
 ```
 
@@ -53,10 +54,13 @@ To add many listeners:
 
 ```javascript
 // Or add many listeners
-addListeners({
+listenStore.addListeners({
   [SET_VAR]({ action, getState, dispatch }) {
-    ...
-  }
+    // ...
+  },
+  [SET_OTHER_VAR]({ action, getState, dispatch }) {
+    // ...
+  },
 })
 ```
 
@@ -64,7 +68,7 @@ The advantage of adding using the "many" syntax is you get named functions for f
 Also in this case, whenever the action with the type `SET_VAR` dispatches, the middleware will call the function.
 
 ```javascript
-addListeners({
+listenStore.addListeners({
   [FETCH_USERS]({ dispatch }, done) {
     fetchUser({ id: '1' }).then(() => {
       dispatch({ type: FETCH_USERS_SUCCESS })
@@ -92,25 +96,25 @@ You can also condition your chaining based on action or state properties.
 There's four ways to use `removeListeners`.
 
 ```javascript
-removeListeners()
+listenStore.removeListeners()
 ```
 
 With no arguments, the middleware removes all listeners.
 
 ```javascript
-removeListeners({ type: 'SET_VAR' })
+listenStore.removeListeners({ type: 'SET_VAR' })
 ```
 
 With `type`, the middleware removes all listeners with the matching type.
 
 ```javascript
-removeListeners({ fn: listenerFn })
+listenStore.removeListeners({ fn: listenerFn })
 ```
 
 With `fn`, the middleware removes all listeners with the same callback function.
 
 ```javascript
-removeListeners({ type: 'SET_VAR', fn: listenerFn })
+listenStore.removeListeners({ type: 'SET_VAR', fn: listenerFn })
 ```
 
 You can also use both `type` and `fn` to remove listeners that match BOTH -- but not only `type` or only `fn`.
@@ -120,13 +124,13 @@ You can also use both `type` and `fn` to remove listeners that match BOTH -- but
 Got some async going on, and need to know when you're done "asyncing"?
 
 ```javascript
-addListener('SET_VAR', ({ action, getState, dispatch }, done) => {
+listenStore.addListener('SET_VAR', ({ action, getState, dispatch }, done) => {
   myPromise.then(() => {
     done()
   })
 })
 
-addListener('REDUX_LISTEN_RESOLVE', () => {
+listenStore.addListener('REDUX_LISTEN_RESOLVE', () => {
   alert('We are done asyncing! Page ready!')
 })
 
@@ -140,7 +144,7 @@ Don't call for `done` on a listener to `REDUX_LISTEN_RESOLVE`. If you do, it wil
 ## isPending
 
 ```javascript
-isPending()
+listenStore.isPending()
 ```
 
 You'll get a true if you still have something asyncing, and false if the middleware isn't waiting on anything.
