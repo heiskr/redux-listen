@@ -23,14 +23,6 @@ function testListener(actionType, listenerType, listenerMatch) {
   )
 }
 
-function getListeners() {
-  return this.listeners
-}
-
-function getPendingCount() {
-  return this.pendingCount
-}
-
 function isPending() {
   return this.pendingCount > 0
 }
@@ -54,35 +46,30 @@ function removeListeners({ type, fn } = {}) {
 
 function decrementPendingCount(dispatch) {
   return once(() => {
-    if (this.pendingCount < 1) {
-      return this.pendingCount
-    }
     this.pendingCount -= 1
-    if (this.pendingCount === 0) {
+    if (this.pendingCount <= 0) {
+      this.pendingCount = 0
       dispatch({ type: REDUX_LISTEN_RESOLVE })
     }
     return this.pendingCount
   })
 }
 
-function handleAction(getState, action, dispatch) {
-  const matches = this.listeners.filter(({ type, match }) =>
-    testListener(action.type, type, match)
-  )
-  this.pendingCount += matches.filter(({ fn }) => fn.length > 1).length
-  return matches.map(({ fn }) =>
-    fn(
-      { getState, action, dispatch },
-      fn.length > 1 && this.decrementPendingCount(dispatch)
-    )
-  )
-}
-
 function middleware(store) {
   return next => action => {
     const result = next(action)
     try {
-      this.handleAction(store.getState, action, store.dispatch)
+      const { getState, dispatch } = store
+      const matches = this.listeners.filter(({ type, match }) =>
+        testListener(action.type, type, match)
+      )
+      this.pendingCount += matches.filter(({ fn }) => fn.length > 1).length
+      matches.map(({ fn }) =>
+        fn(
+          { getState, action, dispatch },
+          fn.length > 1 && this.decrementPendingCount(dispatch)
+        )
+      )
     } catch (e) {
       console.error(e) // eslint-disable-line no-console
     }
@@ -96,14 +83,11 @@ function ReduxListen() {
 }
 
 ReduxListen.prototype = {
-  getListeners,
-  getPendingCount,
   isPending,
   addListener,
   addListeners,
   removeListeners,
   decrementPendingCount,
-  handleAction,
   middleware,
 }
 
