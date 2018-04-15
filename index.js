@@ -1,17 +1,5 @@
 const REDUX_LISTEN_RESOLVE = 'REDUX_LISTEN_RESOLVE'
 
-function once(fn) {
-  let called = false
-  let result
-  return () => {
-    if (!called) {
-      result = fn()
-    }
-    called = true
-    return result
-  }
-}
-
 function isRegExp(o) {
   return Object.prototype.toString.call(o) === '[object RegExp]'
 }
@@ -45,14 +33,14 @@ function removeListeners({ type, fn } = {}) {
 }
 
 function decrementPendingCount(dispatch) {
-  return once(() => {
+  return () => {
     this.pendingCount -= 1
     if (this.pendingCount <= 0) {
       this.pendingCount = 0
       dispatch({ type: REDUX_LISTEN_RESOLVE })
     }
     return this.pendingCount
-  })
+  }
 }
 
 function middleware(store) {
