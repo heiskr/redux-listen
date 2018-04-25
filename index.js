@@ -43,28 +43,26 @@ module.exports = function createReduxListen() {
     }
   }
 
-  function middleware(store) {
-    return next => action => {
-      const result = next(action)
-      try {
-        const { getState, dispatch } = store
-        const matches = listeners.filter(
-          ({ type, isRegExp }) =>
-            type === '*' ||
-            (isRegExp ? action.type.match(type) : type === action.type)
+  const middleware = store => next => action => {
+    const result = next(action)
+    try {
+      const { getState, dispatch } = store
+      const matches = listeners.filter(
+        ({ type, isRegExp }) =>
+          type === '*' ||
+          (isRegExp ? action.type.match(type) : type === action.type)
+      )
+      pendingCount += matches.filter(({ fn }) => fn.length > 1).length
+      matches.map(({ fn }) =>
+        fn(
+          { getState, action, dispatch },
+          fn.length > 1 && decrementPendingCount(dispatch)
         )
-        pendingCount += matches.filter(({ fn }) => fn.length > 1).length
-        matches.map(({ fn }) =>
-          fn(
-            { getState, action, dispatch },
-            fn.length > 1 && decrementPendingCount(dispatch)
-          )
-        )
-      } catch (e) {
-        console.error(e) // eslint-disable-line no-console
-      }
-      return result
+      )
+    } catch (e) {
+      console.error(e) // eslint-disable-line no-console
     }
+    return result
   }
 
   return {
