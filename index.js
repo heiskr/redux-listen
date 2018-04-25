@@ -1,18 +1,11 @@
 const REDUX_LISTEN_RESOLVE = 'REDUX_LISTEN_RESOLVE'
 
-function testListener(actionType, listenerType, listenerMatch) {
-  return !!(
-    (listenerType && (listenerType === actionType || listenerType === '*')) ||
-    (listenerMatch && actionType.match(listenerMatch))
-  )
-}
-
 function isPending() {
   return this.pendingCount > 0
 }
 
 function addListener(type, fn) {
-  this.listeners.push({ fn, [type instanceof RegExp ? 'match' : 'type']: type })
+  this.listeners.push({ fn, type, isRegExp: type instanceof RegExp })
   return fn
 }
 
@@ -47,8 +40,10 @@ function middleware(store) {
     const result = next(action)
     try {
       const { getState, dispatch } = store
-      const matches = this.listeners.filter(({ type, match }) =>
-        testListener(action.type, type, match)
+      const matches = this.listeners.filter(
+        ({ type, isRegExp }) =>
+          type === '*' ||
+          (isRegExp ? action.type.match(type) : type === action.type)
       )
       this.pendingCount += matches.filter(({ fn }) => fn.length > 1).length
       matches.map(({ fn }) =>

@@ -17,19 +17,19 @@ describe('Redux Listen', () => {
       const type = 'TYPE'
       rl.addListener(type, fn)
       expect(rl.listeners).toHaveLength(1)
-      expect(rl.listeners[0]).toEqual({ type, fn })
+      expect(rl.listeners[0]).toEqual({ type, fn, isRegExp: false })
       rl.removeListeners()
     })
 
     test('should add a RegExp listener', () => {
       const rl = new ReduxListen()
       const fn = jest.fn()
-      const type = /TYPE/
+      const type = /TYPE_./
       rl.addListener(type, fn)
       expect(rl.listeners).toHaveLength(1)
-      expect(rl.listeners[0]).toEqual({ match: type, fn })
+      expect(rl.listeners[0]).toEqual({ type, fn, isRegExp: true })
       const next = jest.fn()
-      rl.middleware({})(next)({ type: 'TYPE' })
+      rl.middleware({})(next)({ type: 'TYPE_A' })
       expect(next).toBeCalled()
       rl.removeListeners()
     })
@@ -47,8 +47,8 @@ describe('Redux Listen', () => {
         [typeB]: listenerB,
       })
       expect(rl.listeners).toHaveLength(2)
-      expect(rl.listeners[0]).toEqual({ type: typeA, fn: listenerA })
-      expect(rl.listeners[1]).toEqual({ type: typeB, fn: listenerB })
+      expect(rl.listeners[0]).toEqual({ type: typeA, fn: listenerA, isRegExp: false })
+      expect(rl.listeners[1]).toEqual({ type: typeB, fn: listenerB, isRegExp: false })
       rl.removeListeners()
     })
   })
@@ -86,21 +86,21 @@ describe('Redux Listen', () => {
       expect(rl.listeners).toHaveLength(2)
       rl.removeListeners({ type: typeB })
       expect(rl.listeners).toHaveLength(1)
-      expect(rl.listeners[0]).toEqual({ type: typeA, fn: listenerA })
+      expect(rl.listeners[0]).toEqual({ type: typeA, fn: listenerA, isRegExp: false })
     })
 
     test('should remove listeners by fn', () => {
       expect(rl.listeners).toHaveLength(2)
       rl.removeListeners({ fn: listenerB })
       expect(rl.listeners).toHaveLength(1)
-      expect(rl.listeners[0]).toEqual({ type: typeA, fn: listenerA })
+      expect(rl.listeners[0]).toEqual({ type: typeA, fn: listenerA, isRegExp: false })
     })
 
     test('should remove listeners by type and fn', () => {
       expect(rl.listeners).toHaveLength(2)
       rl.removeListeners({ type: typeB, fn: listenerB })
       expect(rl.listeners).toHaveLength(1)
-      expect(rl.listeners[0]).toEqual({ type: typeA, fn: listenerA })
+      expect(rl.listeners[0]).toEqual({ type: typeA, fn: listenerA, isRegExp: false })
     })
   })
 
