@@ -29,7 +29,7 @@ describe('Redux Listen', () => {
       expect(rl.listeners).toHaveLength(1)
       expect(rl.listeners[0]).toEqual({ match: type, fn })
       const next = jest.fn()
-      rl.middleware({})(next)({type: 'TYPE'})
+      rl.middleware({})(next)({ type: 'TYPE' })
       expect(next).toBeCalled()
       rl.removeListeners()
     })

@@ -1,9 +1,5 @@
 const REDUX_LISTEN_RESOLVE = 'REDUX_LISTEN_RESOLVE'
 
-function isRegExp(o) {
-  return Object.prototype.toString.call(o) === '[object RegExp]'
-}
-
 function testListener(actionType, listenerType, listenerMatch) {
   return !!(
     (listenerType && (listenerType === actionType || listenerType === '*')) ||
@@ -16,7 +12,7 @@ function isPending() {
 }
 
 function addListener(type, fn) {
-  this.listeners.push({ fn, [isRegExp(type) ? 'match' : 'type']: type })
+  this.listeners.push({ fn, [type instanceof RegExp ? 'match' : 'type']: type })
   return fn
 }
 
