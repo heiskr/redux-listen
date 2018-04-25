@@ -33,7 +33,10 @@ function removeListeners({ type, fn } = {}) {
 }
 
 function decrementPendingCount(dispatch) {
+  let called = false
   return () => {
+    if (called) return this.pendingCount
+    called = true
     this.pendingCount -= 1
     if (this.pendingCount <= 0) {
       this.pendingCount = 0

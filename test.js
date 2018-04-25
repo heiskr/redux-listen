@@ -156,6 +156,7 @@ describe('Redux Listen', () => {
           expect(rl.pendingCount).toEqual(2)
           _()
           expect(rl.pendingCount).toEqual(1)
+          _() // should have no effect
           expect(resolver).not.toBeCalled()
         }, 10)
       })
