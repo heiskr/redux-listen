@@ -1,33 +1,33 @@
-const ReduxListen = require('./index')
+const createReduxListen = require('./index')
 
 const REDUX_LISTEN_RESOLVE = 'REDUX_LISTEN_RESOLVE'
 
 describe('Redux Listen', () => {
   describe('#getListeners', () => {
     test('should be an array', () => {
-      const rl = new ReduxListen()
-      expect(rl.listeners).toEqual([])
+      const rl = createReduxListen()
+      expect(rl.getListeners()).toEqual([])
     })
   })
 
   describe('#addListener', () => {
     test('should add a listener', () => {
-      const rl = new ReduxListen()
+      const rl = createReduxListen()
       const fn = jest.fn()
       const type = 'TYPE'
       rl.addListener(type, fn)
-      expect(rl.listeners).toHaveLength(1)
-      expect(rl.listeners[0]).toEqual({ type, fn, isRegExp: false })
+      expect(rl.getListeners()).toHaveLength(1)
+      expect(rl.getListeners()[0]).toEqual({ type, fn, isRegExp: false })
       rl.removeListeners()
     })
 
     test('should add a RegExp listener', () => {
-      const rl = new ReduxListen()
+      const rl = createReduxListen()
       const fn = jest.fn()
       const type = /TYPE_./
       rl.addListener(type, fn)
-      expect(rl.listeners).toHaveLength(1)
-      expect(rl.listeners[0]).toEqual({ type, fn, isRegExp: true })
+      expect(rl.getListeners()).toHaveLength(1)
+      expect(rl.getListeners()[0]).toEqual({ type, fn, isRegExp: true })
       const next = jest.fn()
       rl.middleware({})(next)({ type: 'TYPE_A' })
       expect(next).toBeCalled()
@@ -37,7 +37,7 @@ describe('Redux Listen', () => {
 
   describe('#addListeners', () => {
     test('should add many listeners', () => {
-      const rl = new ReduxListen()
+      const rl = createReduxListen()
       const listenerA = jest.fn()
       const listenerB = jest.fn()
       const typeA = 'TYPE_A'
@@ -46,9 +46,9 @@ describe('Redux Listen', () => {
         [typeA]: listenerA,
         [typeB]: listenerB,
       })
-      expect(rl.listeners).toHaveLength(2)
-      expect(rl.listeners[0]).toEqual({ type: typeA, fn: listenerA, isRegExp: false })
-      expect(rl.listeners[1]).toEqual({ type: typeB, fn: listenerB, isRegExp: false })
+      expect(rl.getListeners()).toHaveLength(2)
+      expect(rl.getListeners()[0]).toEqual({ type: typeA, fn: listenerA, isRegExp: false })
+      expect(rl.getListeners()[1]).toEqual({ type: typeB, fn: listenerB, isRegExp: false })
       rl.removeListeners()
     })
   })
@@ -61,7 +61,7 @@ describe('Redux Listen', () => {
     let typeB
 
     beforeEach(() => {
-      rl = new ReduxListen()
+      rl = createReduxListen()
       listenerA = jest.fn()
       listenerB = jest.fn()
       typeA = 'TYPE_A'
@@ -77,48 +77,41 @@ describe('Redux Listen', () => {
     })
 
     test('should remove all listeners', () => {
-      expect(rl.listeners).toHaveLength(2)
+      expect(rl.getListeners()).toHaveLength(2)
       rl.removeListeners()
-      expect(rl.listeners).toHaveLength(0)
+      expect(rl.getListeners()).toHaveLength(0)
     })
 
     test('should remove listeners by type', () => {
-      expect(rl.listeners).toHaveLength(2)
+      expect(rl.getListeners()).toHaveLength(2)
       rl.removeListeners({ type: typeB })
-      expect(rl.listeners).toHaveLength(1)
-      expect(rl.listeners[0]).toEqual({ type: typeA, fn: listenerA, isRegExp: false })
+      expect(rl.getListeners()).toHaveLength(1)
+      expect(rl.getListeners()[0]).toEqual({ type: typeA, fn: listenerA, isRegExp: false })
     })
 
     test('should remove listeners by fn', () => {
-      expect(rl.listeners).toHaveLength(2)
+      expect(rl.getListeners()).toHaveLength(2)
       rl.removeListeners({ fn: listenerB })
-      expect(rl.listeners).toHaveLength(1)
-      expect(rl.listeners[0]).toEqual({ type: typeA, fn: listenerA, isRegExp: false })
+      expect(rl.getListeners()).toHaveLength(1)
+      expect(rl.getListeners()[0]).toEqual({ type: typeA, fn: listenerA, isRegExp: false })
     })
 
     test('should remove listeners by type and fn', () => {
-      expect(rl.listeners).toHaveLength(2)
+      expect(rl.getListeners()).toHaveLength(2)
       rl.removeListeners({ type: typeB, fn: listenerB })
-      expect(rl.listeners).toHaveLength(1)
-      expect(rl.listeners[0]).toEqual({ type: typeA, fn: listenerA, isRegExp: false })
-    })
-  })
-
-  describe('#getPendingCount', () => {
-    test('should get pending count', () => {
-      const rl = new ReduxListen()
-      expect(rl.pendingCount).toBe(0)
+      expect(rl.getListeners()).toHaveLength(1)
+      expect(rl.getListeners()[0]).toEqual({ type: typeA, fn: listenerA, isRegExp: false })
     })
   })
 
   describe('#isPending', () => {
     test('should be false if nothing', () => {
-      const rl = new ReduxListen()
+      const rl = createReduxListen()
       expect(rl.isPending()).toBe(false)
     })
 
     test('should be true if waiting', done => {
-      const rl = new ReduxListen()
+      const rl = createReduxListen()
       const store = { getState: () => ({}), dispatch: a => a }
       const next = jest.fn()
       const action = { type: 'FOO' }
@@ -138,47 +131,45 @@ describe('Redux Listen', () => {
 
   describe('#decrementPendingCount', () => {
     test('should not decrement pending count', () => {
-      const rl = new ReduxListen()
-      expect(rl.pendingCount).toEqual(0)
+      const rl = createReduxListen()
+      expect(rl.isPending()).toEqual(false)
       rl.decrementPendingCount(() => {}, () => {})()
-      expect(rl.pendingCount).toEqual(0)
+      expect(rl.isPending()).toEqual(false)
     })
 
     test('should decrement pending count and should call resolve listeners', done => {
-      const rl = new ReduxListen()
-      let middleware
-      const store = { getState: () => ({}), dispatch: a => middleware(a) }
+      const rl = createReduxListen()
       const next = jest.fn()
-      middleware = rl.middleware(store)(next)
+      const store = { getState: () => ({}), dispatch: action => rl.middleware(store)(next)(action) }
       const resolver = jest.fn()
       rl.addListener('FOO', (x, _) => {
         setTimeout(() => {
-          expect(rl.pendingCount).toEqual(2)
+          expect(rl.isPending()).toEqual(true)
           _()
-          expect(rl.pendingCount).toEqual(1)
+          expect(rl.isPending()).toEqual(true)
           _() // should have no effect
           expect(resolver).not.toBeCalled()
         }, 10)
       })
       rl.addListener('FOO', (x, _) => {
         setTimeout(() => {
-          expect(rl.pendingCount).toEqual(1)
+          expect(rl.isPending()).toEqual(true)
           _()
-          expect(rl.pendingCount).toEqual(0)
+          expect(rl.isPending()).toEqual(false)
           expect(resolver).toBeCalled()
           rl.removeListeners()
           done()
         }, 20)
       })
       rl.addListener(REDUX_LISTEN_RESOLVE, () => resolver())
-      middleware({ type: 'FOO' })
-      expect(rl.pendingCount).toEqual(2)
+      rl.middleware(store)(next)({ type: 'FOO' })
+      expect(rl.isPending()).toEqual(true)
     })
   })
 
   describe('#middleware', () => {
     test('should fire matching listeners', () => {
-      const rl = new ReduxListen()
+      const rl = createReduxListen()
       const state = {}
       const store = {
         getState() {
@@ -197,7 +188,7 @@ describe('Redux Listen', () => {
     })
 
     test('should log error', () => {
-      const rl = new ReduxListen()
+      const rl = createReduxListen()
       const spy = jest.spyOn(global.console, 'error')
       function fn() {
         throw new Error('FOO')

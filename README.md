@@ -9,8 +9,8 @@ Use the listener pattern with Redux middleware.
 To add the middleware to your store:
 
 ```javascript
-const ReduxListen = require('redux-listen')
-const listenStore = new ReduxListen()
+const createReduxListen = require('redux-listen')
+const listenStore = createReduxListen()
 const store = createStore(reducer, applyMiddleware(listenStore.middleware))
 ```
 
