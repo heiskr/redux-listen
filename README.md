@@ -1,7 +1,5 @@
 # Redux Listen
 
-[![Build Status](https://img.shields.io/travis/heiskr/redux-listen.svg?style=flat)](https://travis-ci.org/heiskr/redux-listen)
-
 Use the listener pattern with Redux middleware.
 
 ## Middleware
